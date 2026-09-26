@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <title>Randy 測試擴充</title>
+  <style>
+    :root { color-scheme: light; }
+    :root[data-xhub-theme="dark"] { color-scheme: dark; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      box-sizing: border-box; padding: 18px; background: var(--xhub-page-bg, transparent);
+      font: 14px/1.6 -apple-system, "PingFang TC", sans-serif; color: var(--xhub-text-1, #26231d);
+    }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+    .panel {
+      background: var(--xhub-surface, rgba(255,255,255,.75)); border: 1px solid var(--xhub-border, rgba(0,0,0,.08));
+      border-radius: var(--xhub-radius-lg, 12px); padding: 14px 16px;
+    }
+    h1 { font-size: 18px; margin: 0 0 12px; }
+    h2 { font-size: 14px; margin: 0 0 8px; }
+    .muted { color: var(--xhub-text-3, #8d877d); font-size: 12px; }
+    button {
+      font: inherit; border: 0; border-radius: 8px; padding: 5px 12px; cursor: pointer;
+      background: var(--xhub-accent, #5b5bf5); color: #fff;
+    }
+    :root[data-xhub-theme="dark"] button { color: #1d1e29; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    td { padding: 4px 6px; border-bottom: 1px solid var(--xhub-border, rgba(0,0,0,.08)); vertical-align: top; }
+    .pass { color: var(--xhub-green, #16a34a); font-weight: 700; }
+    .fail { color: var(--xhub-red, #dc2626); font-weight: 700; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; background: #999; }
+    .dot.ok { background: var(--xhub-green, #22c55e); }
+    .dot.bad { background: var(--xhub-red, #ef4444); }
+    code { font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1 id="title">Randy 測試擴充</h1>
+  <div class="grid">
+    <div class="panel">
+      <h2>儲存（xhub.storage，按擴充隔離）</h2>
+      <p><strong id="count" style="font-size:28px">0</strong> <span class="muted">次；重開 Hub 仍在</span></p>
+      <button id="plus">＋1</button>
+      <p class="muted" id="greeting"></p>
+    </div>
+    <div class="panel">
+      <h2>軍師中控（strategist:read）</h2>
+      <p><span class="dot" id="gw"></span> <span id="gw-text">讀取中…</span></p>
+      <p class="muted" id="slots"></p>
+    </div>
+    <div class="panel">
+      <h2>宿主資訊（runtime.info）</h2>
+      <p class="muted" id="info">讀取中…</p>
+      <button id="notify">送一則 macOS 通知</button>
+      <button id="external">開外部連結（宿主會先問你）</button>
+    </div>
+    <div class="panel" style="grid-column: 1 / -1">
+      <h2>權限隔離自檢（預期被擋 = PASS）</h2>
+      <table><tbody id="checks"></tbody></table>
+    </div>
+  </div>
+  <script src="../assets/shared.js"></script>
+  <script src="./view.js"></script>
+</body>
+</html>

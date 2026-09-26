@@ -1,0 +1,22 @@
+{
+  "id": "com.yourname.my-service",
+  "name": "我的後端擴充",
+  "version": "0.1.0",
+  "runtime": "service",
+  "kind": "view",
+  "surfaces": ["view", "drawer"],
+  "openIn": ["view", "drawer"],
+  "entry": {
+    "view": "./view/index.html"
+  },
+  "backend": {
+    "entry": "./service/main.py",
+    "engine": { "type": "python" },
+    "cwd": "./service",
+    "port": 0,
+    "health": "/healthz"
+  },
+  "icon": "./icon.svg",
+  "description": "一句話說明這個擴充做什麼",
+  "permissions": []
+}

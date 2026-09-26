@@ -1,0 +1,19 @@
+# Randy Hub 範圍內的忽略規則（不動 repo 根 .gitignore，避免與其他分支衝突）
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+__pycache__/
+.pytest_cache/
+# 擴充在開發目錄直掛時的執行期資料（見 x-hub pitfalls #19）
+**/.data/
+**/.storage.json
+**/.config.json
+**/.permissions.json

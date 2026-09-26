@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <title>Randy 測試擴充（卡片）</title>
+  <style>
+    html, body { height: 100%; margin: 0; }
+    body {
+      box-sizing: border-box; padding: 12px; background: transparent;
+      font: 13px/1.5 -apple-system, "PingFang TC", sans-serif; color: var(--xhub-text-1, #26231d);
+      display: flex; flex-direction: column; gap: 6px; overflow: hidden;
+    }
+    .big { font-size: clamp(22px, 9cqh, 40px); font-weight: 700; color: var(--xhub-accent, #5b5bf5); }
+    .muted { color: var(--xhub-text-3, #8d877d); font-size: 12px; }
+    .row { display: flex; gap: 8px; align-items: center; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--xhub-text-3, #999); }
+    .dot.ok { background: var(--xhub-green, #22c55e); }
+    .dot.bad { background: var(--xhub-red, #ef4444); }
+    button {
+      font: inherit; border: 0; border-radius: 8px; padding: 4px 10px; cursor: pointer;
+      background: var(--xhub-brand-soft, rgba(91,91,245,.12)); color: var(--xhub-text-1, #26231d);
+    }
+  </style>
+</head>
+<body>
+  <div class="row"><span class="big" id="count">0</span><span class="muted">次點擊（存在 xhub.storage）</span></div>
+  <div class="row"><span class="dot" id="gw"></span><span class="muted" id="gw-text">讀取軍師狀態…</span></div>
+  <div class="row"><button id="plus">＋1</button><button id="open">開啟完整頁面</button></div>
+  <script src="../assets/shared.js"></script>
+  <script>
+    (async function () {
+      const count = document.getElementById('count');
+      let n = (await window.xhub.storage.get('counter')) || 0;
+      count.textContent = n;
+      document.getElementById('plus').addEventListener('click', async () => {
+        n += 1;
+        count.textContent = n;
+        await window.xhub.storage.set('counter', n);
+        window.xhub.events.emit('hello:counter', n);
+      });
+      document.getElementById('open').addEventListener('click', () => window.xhub.runtime.open('view'));
+      window.xhub.events.on('hello:counter', (v) => { n = v; count.textContent = v; });
+      window.RandyHello.gatewayDot(document.getElementById('gw'), document.getElementById('gw-text'));
+    })();
+  </script>
+</body>
+</html>

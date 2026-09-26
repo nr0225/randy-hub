@@ -1,0 +1,19 @@
+{
+  "id": "com.randy.echo-service",
+  "name": "Echo 後端（service 範例）",
+  "version": "0.1.0",
+  "description": "Python 背景服務範例：預設不啟動、需信任此版本；前端經 xhub.service.request 呼叫；後端只能用令牌取回自己的機密。",
+  "runtime": "service",
+  "kind": "view",
+  "surfaces": ["view", "drawer"],
+  "entry": { "view": "./view/index.html" },
+  "backend": {
+    "entry": "./service/main.py",
+    "engine": { "type": "python" },
+    "cwd": "./service",
+    "port": 0,
+    "health": "/healthz"
+  },
+  "permissions": [],
+  "icon": "./icon.svg"
+}

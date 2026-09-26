@@ -1,0 +1,67 @@
+<!doctype html>
+<!-- 骨架改寫自 x-hub templates/entry.view.html（MIT, © 2026 dckxx）。window.xhub 由 Randy Hub 注入，不要 import。 -->
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>我的擴充</title>
+  <style>
+    :root {
+      --surface: var(--xhub-surface, rgba(255, 255, 255, 0.7));
+      --well: var(--xhub-bg-card, rgba(255, 255, 255, 0.9));
+      --ink: var(--xhub-text-1, #26231d);
+      --ink-2: var(--xhub-text-2, #57524a);
+      --line: var(--xhub-border, rgba(0, 0, 0, 0.1));
+      --primary: var(--xhub-accent, #5b5bf5);
+      --radius: var(--xhub-radius-lg, 12px);
+    }
+    :root[data-xhub-theme="dark"] {
+      --surface: var(--xhub-surface, rgba(255, 255, 255, 0.08));
+      --well: var(--xhub-bg-card, rgba(255, 255, 255, 0.06));
+      --ink: var(--xhub-text-1, #f2efe8);
+      --ink-2: var(--xhub-text-2, #ccc8bf);
+      --line: var(--xhub-border, rgba(255, 255, 255, 0.14));
+      --primary: var(--xhub-accent, #8b8bff);
+    }
+    body {
+      margin: 0; min-height: 100vh; padding: 24px; box-sizing: border-box;
+      font: 14px/1.6 -apple-system, "PingFang TC", sans-serif; color: var(--ink);
+      background: var(--xhub-page-bg, transparent); /* 鐵律：頁面底不鋪不透明底 */
+    }
+    .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
+    button { font: inherit; color: var(--ink); background: var(--well); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+    button:hover { border-color: var(--primary); }
+  </style>
+</head>
+<body>
+  <div class="panel">
+    <h1 style="margin:0 0 8px;font-size:16px">我的擴充</h1>
+    <p id="out" style="margin:0 0 12px;color:var(--ink-2)">載入中…</p>
+    <button id="act">儲存一筆</button>
+  </div>
+  <script>
+    const out = document.getElementById('out');
+    const say = (text) => { out.textContent = text; };
+    const explain = (err) => err.code === 'PERMISSION_DENIED'
+      ? `沒有權限：${err.message}（請到 Randy Hub 擴充中心確認權限）`
+      : `${err.code || 'ERROR'}：${err.message}`;
+
+    async function boot() {
+      try {
+        const info = await window.xhub.runtime.info();
+        const saved = await window.xhub.storage.get('state');
+        say(saved ? `已儲存：${JSON.stringify(saved)}` : `就緒：${info.name} v${info.version}`);
+      } catch (err) { say(explain(err)); }
+    }
+
+    document.getElementById('act').addEventListener('click', async () => {
+      try {
+        await window.xhub.storage.set('state', { at: new Date().toISOString() });
+        say('已儲存');
+      } catch (err) { say(explain(err)); }
+    });
+
+    boot();
+  </script>
+</body>
+</html>

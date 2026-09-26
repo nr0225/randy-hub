@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <title>Echo 後端</title>
+  <style>
+    body { margin: 0; padding: 18px; font: 14px/1.6 -apple-system, "PingFang TC", sans-serif;
+      color: var(--xhub-text-1, #26231d); background: var(--xhub-page-bg, transparent); }
+    .panel { background: var(--xhub-surface, rgba(255,255,255,.75)); border: 1px solid var(--xhub-border, rgba(0,0,0,.08));
+      border-radius: var(--xhub-radius-lg, 12px); padding: 14px 16px; margin-bottom: 12px; }
+    button { font: inherit; border: 0; border-radius: 8px; padding: 5px 12px; cursor: pointer;
+      background: var(--xhub-accent, #5b5bf5); color: #fff; margin-right: 6px; }
+    :root[data-xhub-theme="dark"] button { color: #1d1e29; }
+    input { font: inherit; padding: 5px 8px; border-radius: 8px; border: 1px solid var(--xhub-border, #ccc);
+      background: var(--xhub-bg-card, #fff); color: inherit; }
+    pre { white-space: pre-wrap; background: var(--xhub-bg-card, rgba(0,0,0,.04)); padding: 10px; border-radius: 8px; font-size: 12px; }
+    .muted { color: var(--xhub-text-3, #888); font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="panel">
+    <strong>後端狀態：</strong><span id="state">檢查中…</span>
+    <p class="muted">後端預設不啟動。到「擴充中心」勾選信任此版本 → 按「啟動後端」。</p>
+  </div>
+  <div class="panel">
+    <input id="msg" value="哈囉，軍師" />
+    <button id="echo">Echo</button>
+    <button id="who">我是誰（令牌對照）</button>
+    <button id="secret">檢查機密 DEMO_TOKEN</button>
+    <pre id="out">—</pre>
+  </div>
+  <script src="./view.js"></script>
+</body>
+</html>

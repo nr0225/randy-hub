@@ -1,0 +1,22 @@
+{
+  "id": "com.randy.hello",
+  "name": "Randy 測試擴充",
+  "version": "0.1.0",
+  "description": "MVP 驗收用：儀表板卡片 + 完整頁面，示範 storage / config / 主題 / 軍師狀態 / 通知，以及高危權限預設被擋。",
+  "runtime": "web",
+  "kind": "view",
+  "surfaces": ["module", "view", "drawer"],
+  "openIn": ["view", "drawer"],
+  "entry": {
+    "module": "./module/index.html",
+    "view": "./view/index.html"
+  },
+  "moduleVariants": [
+    { "id": "compact", "name": "緊湊", "minW": 3, "minH": 3, "idealW": 4, "idealH": 3 }
+  ],
+  "moduleOptions": { "defaultHideTitle": false },
+  "permissions": ["events", "notify", "strategist:read", "strategist:command"],
+  "requires": ["storage.get", "strategist.status"],
+  "config": { "greeting": "軍師好" },
+  "icon": "./icon.svg"
+}

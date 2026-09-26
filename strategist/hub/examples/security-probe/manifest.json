@@ -1,0 +1,11 @@
+{
+  "id": "com.randy.security-probe",
+  "name": "安全探針（驗收用）",
+  "version": "0.1.0",
+  "description": "不宣告任何權限，主動嘗試越權：讀宿主 API、讀軍師閘道、讀點檔、冒名 postMessage、碰父視窗 DOM。全部被擋才算 PASS。",
+  "runtime": "web",
+  "kind": "view",
+  "surfaces": ["view"],
+  "entry": { "view": "./index.html" },
+  "permissions": []
+}

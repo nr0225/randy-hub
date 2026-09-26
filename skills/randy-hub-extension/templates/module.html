@@ -1,0 +1,34 @@
+<!doctype html>
+<!-- 儀表板卡片骨架（改寫自 x-hub templates/entry.module.html，MIT, © 2026 dckxx）。卡片保持透明，宿主已套玻璃卡。 -->
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <title>我的卡片</title>
+  <style>
+    html, body { height: 100%; margin: 0; }
+    body {
+      box-sizing: border-box; padding: 12px; overflow: hidden; background: transparent;
+      font: 13px/1.5 -apple-system, "PingFang TC", sans-serif; color: var(--xhub-text-1, #26231d);
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .big { font-size: clamp(20px, 9cqh, 40px); font-weight: 700; color: var(--xhub-accent, #5b5bf5); }
+    .muted { color: var(--xhub-text-3, #8d877d); font-size: 12px; }
+    :root[data-xhub-variant="compact"] .muted { display: none; }
+  </style>
+</head>
+<body>
+  <div class="big" id="value">—</div>
+  <div class="muted">說明文字（格子太矮時自動隱藏）</div>
+  <script>
+    (async () => {
+      try {
+        const value = await window.xhub.storage.get('state');
+        document.getElementById('value').textContent = value ? '已有資料' : '尚無資料';
+      } catch (err) {
+        document.getElementById('value').textContent = err.code || '錯誤';
+      }
+      window.xhub.events.on('xhub:variant-changed', (variant) => { /* 依形態重排 */ });
+    })();
+  </script>
+</body>
+</html>

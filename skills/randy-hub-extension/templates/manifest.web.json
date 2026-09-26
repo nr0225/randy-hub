@@ -1,0 +1,15 @@
+{
+  "id": "com.yourname.my-ext",
+  "name": "我的擴充",
+  "version": "0.1.0",
+  "runtime": "web",
+  "kind": "view",
+  "surfaces": ["view"],
+  "openIn": ["view"],
+  "entry": {
+    "view": "./view/index.html"
+  },
+  "icon": "./icon.svg",
+  "description": "一句話說明這個擴充做什麼",
+  "permissions": []
+}

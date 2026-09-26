@@ -1,0 +1,28 @@
+<!doctype html>
+<!--
+  Adapted from x-hub (MIT, Copyright (c) 2026 dckxx) — tests/extensions/security-probe。
+  Randy 修改：自動執行多項越權嘗試並把結果寫回 xhub.storage（selftest / 驗收可讀），不需手填路徑。
+-->
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <title>安全探針（驗收用）</title>
+  <style>
+    body { margin: 0; padding: 18px; font: 13px/1.6 -apple-system, "PingFang TC", sans-serif;
+      color: var(--xhub-text-1, #1a1a1a); background: var(--xhub-page-bg, transparent); }
+    h1 { font-size: 16px; margin: 0 0 6px; }
+    table { width: 100%; border-collapse: collapse; }
+    td { padding: 5px 6px; border-bottom: 1px solid var(--xhub-border, rgba(0,0,0,.08)); vertical-align: top; }
+    .pass { color: #16a34a; font-weight: 700; }
+    .fail { color: #dc2626; font-weight: 700; }
+    .muted { color: var(--xhub-text-3, #888); font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>安全探針（驗收用）</h1>
+  <p class="muted" id="summary">執行中…</p>
+  <p class="muted">本擴充 origin：<code id="origin"></code></p>
+  <table><tbody id="rows"></tbody></table>
+  <script src="./probe.js"></script>
+</body>
+</html>

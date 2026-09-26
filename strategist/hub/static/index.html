@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Randy Hub</title>
+  <link rel="stylesheet" href="/static/app.css" />
+  <script type="module" src="/static/js/main.js"></script>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">◆</span> Randy Hub</div>
+      <nav class="nav" id="nav">
+        <a href="#/dashboard" data-route="dashboard">儀表板</a>
+        <a href="#/extensions" data-route="extensions">擴充中心</a>
+        <a href="#/providers" data-route="providers">AI 供應商</a>
+        <a href="#/strategist" data-route="strategist">軍師中控</a>
+        <a href="#/settings" data-route="settings">設定</a>
+      </nav>
+      <div class="nav-section" id="pinned-title" hidden>釘選的擴充</div>
+      <nav class="nav" id="pinned"></nav>
+      <div class="sidebar-foot" id="sidebar-foot">連線中…</div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <h1 id="page-title">Randy Hub</h1>
+        <div class="topbar-actions" id="page-actions"></div>
+      </header>
+      <section class="view" id="view"></section>
+    </main>
+    <aside class="drawer" id="drawer" hidden>
+      <div class="drawer-head"><strong id="drawer-title"></strong><button class="btn ghost" id="drawer-close" title="關閉">✕</button></div>
+      <div class="drawer-body" id="drawer-body"></div>
+    </aside>
+  </div>
+  <div class="toast-stack" id="toasts" aria-live="polite"></div>
+</body>
+</html>
