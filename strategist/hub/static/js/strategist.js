@@ -3,7 +3,7 @@ import { get, post } from './api.js';
 import { strategistBody } from './dashboard.js';
 import { card, clear, confirmDialog, guard, h, setActions, setTitle } from './ui.js';
 
-const TARGETS = ['', 'claude', 'nim', 'gemini', 'gpt', 'mlx', 'ollama', 'journal'];
+const TARGETS = ['', 'claude', 'nim', 'gemini', 'gpt', 'mlx', 'ollama', 'agent', 'coder', 'flash', 'pro', 'journal'];
 
 export async function renderStrategist(view) {
   setTitle('軍師中控');

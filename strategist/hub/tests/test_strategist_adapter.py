@@ -19,12 +19,12 @@ _SLOTS = [
 SETTINGS = {
     "STRATEGIST_PROVIDER": "nim",
     "STRATEGIST_MODEL": "meta/llama-3.3-70b-instruct",
-    "NIM_API_KEY": "nvapi-SUPERSECRET-1",
-    "NIM_API_KEY_FLASH": "nvapi-SUPERSECRET-2",
+    "NIM_API_KEY": "fixture_nim_primary",
+    "NIM_API_KEY_FLASH": "fixture_nim_flash",
     "GEMINI_API_KEY": "",
-    "OLLAMA_HOST": "http://user:pw-SUPERSECRET@localhost:11434",
-    "STRATEGIST_CLI_CMD": "curl -H 'Authorization: SUPERSECRET'",
-    "__profiles__": {"work": {"NIM_API_KEY": "nvapi-SUPERSECRET-3"}},
+    "OLLAMA_HOST": "http://user:fixture_password@localhost:11434",
+    "STRATEGIST_CLI_CMD": "curl -H 'Authorization: fixture_token'",
+    "__profiles__": {"work": {"NIM_API_KEY": "fixture_nim_profile"}},
 }
 
 
@@ -104,6 +104,13 @@ def test_command_goes_through_gateway(root, gateway):
     assert seen == [{"command": "幫我看今天待辦", "target": "nim", "context": ""}]
 
 
+@pytest.mark.parametrize("target", ["agent", "coder", "flash", "pro"])
+def test_command_accepts_worker_targets(root, gateway, target):
+    url, seen = gateway
+    StrategistAdapter(root, url).command("x", target=target)
+    assert seen[-1]["target"] == target
+
+
 def test_command_rejects_bad_target_and_empty(root, gateway):
     adapter = StrategistAdapter(root, gateway[0])
     with pytest.raises(StrategistError):
@@ -129,7 +136,7 @@ def test_routes_pass_only_whitelisted_fields(root):
     class H(BaseHTTPRequestHandler):
         def do_GET(self):
             rows = [{"route": "flash", "provider": "nim", "keySlot": "NIM_API_KEY_FLASH", "keySet": True,
-                     "model": "m-flash", "value": "nvapi-SUPERSECRET-9", "debug": {"key": "nvapi-SUPERSECRET-9"}}]
+                     "model": "m-flash", "value": "fixture_hidden_value", "debug": {"key": "fixture_hidden_value"}}]
             body = {"success": True, "routes": rows} if self.path == "/api/strategist/routes" else {"ok": True}
             data = json.dumps(body).encode()
             self.send_response(200)

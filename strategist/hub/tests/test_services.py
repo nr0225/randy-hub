@@ -139,6 +139,33 @@ def test_node_version_gate(monkeypatch, tmp_path):
     assert services_mod.node_command(tmp_path / "index.js", "18")[0] == "/usr/local/bin/node"
 
 
+@pytest.mark.parametrize(("listen_host", "connect_host"), [
+    ("127.0.0.1", "127.0.0.1"),
+    ("localhost", "localhost"),
+    ("::1", "::1"),
+    ("0.0.0.0", "127.0.0.1"),
+    ("::", "::1"),
+])
+def test_service_connect_host_respects_ipv6_and_normalizes_wildcards(listen_host, connect_host):
+    assert services_mod._connect_host(listen_host) == connect_host
+
+
+def test_failed_readiness_cleans_up_process_and_token(ctx, tmp_path, monkeypatch):
+    root = write_ext(
+        tmp_path / "svc",
+        _service_manifest(),
+        {"view/index.html": HTML, "service/main.py": "import time\ntime.sleep(60)\n"},
+    )
+    ctx.registry.add_mount(str(root))
+    ctx.registry.set_trust(SVC, True)
+    monkeypatch.setattr(services_mod, "READY_TIMEOUT_S", 0.05)
+    with pytest.raises(ServiceError) as info:
+        ctx.services.start(SVC)
+    assert info.value.code == "SERVICE_NOT_READY"
+    assert SVC not in ctx.services._procs
+    assert ctx.services._tokens == {}
+
+
 def test_web_extension_cannot_use_service_request(ctx, tmp_path):
     root = write_ext(tmp_path / "web", web_manifest(id="com.test.web"), {"view/index.html": HTML})
     ctx.registry.add_mount(str(root))

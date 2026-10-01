@@ -93,13 +93,58 @@ def test_missing_key_for_cloud_preset(manager):
     assert info.value.code == "KEY_MISSING"
 
 
-def test_anthropic_preset_sends_native_headers(manager, fake_api):
-    url, seen = fake_api
-    created = manager.create("anthropic", base_url=url)
-    manager.set_key(created["id"], KEY)
-    manager.fetch_models(created["id"])
-    headers = {k.lower(): v for k, v in seen[-1].items()}  # urllib 會把標頭名轉成首字大寫
-    assert headers.get("x-api-key") == KEY and headers.get("anthropic-version")
+def test_anthropic_preset_uses_messages_api_and_native_headers(manager):
+    seen = []
+
+    class H(BaseHTTPRequestHandler):
+        def _json(self, code, body):
+            data = json.dumps(body).encode()
+            self.send_response(code)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+
+        def _authed(self):
+            headers = {k.lower(): v for k, v in self.headers.items()}
+            seen.append({"path": self.path, "headers": headers})
+            return headers.get("x-api-key") == KEY and headers.get("anthropic-version") and "authorization" not in headers
+
+        def do_GET(self):
+            if not self._authed():
+                self._json(401, {})
+            elif self.path == "/v1/models":
+                self._json(200, {"data": [{"id": "claude-test"}]})
+            else:
+                self._json(404, {})
+
+        def do_POST(self):
+            length = int(self.headers["Content-Length"])
+            body = json.loads(self.rfile.read(length))
+            if not self._authed():
+                self._json(401, {})
+                return
+            if self.path != "/v1/messages":
+                self._json(404, {})
+                return
+            self._json(200, {"content": [{"type": "text", "text": f"echo:{body['messages'][0]['content']}"}],
+                             "usage": {"input_tokens": 1, "output_tokens": 1}})
+
+        def log_message(self, *a):
+            pass
+
+    srv = ThreadingHTTPServer(("127.0.0.1", 0), H)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    try:
+        created = manager.create("anthropic", base_url=f"http://127.0.0.1:{srv.server_address[1]}/v1")
+        manager.set_key(created["id"], KEY)
+        assert manager.fetch_models(created["id"]) == ["claude-test"]
+        manager.update(created["id"], {"defaultModel": "claude-test"})
+        assert manager.chat(created["id"], "哈囉")["reply"] == "echo:哈囉"
+        assert [item["path"] for item in seen] == ["/v1/models", "/v1/messages"]
+    finally:
+        srv.shutdown()
+        srv.server_close()
 
 
 @pytest.mark.parametrize("bad", ["http://api.example.com/v1", "https://user:pw@api.example.com/v1", "ftp://x", "not a url"])

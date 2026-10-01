@@ -72,6 +72,15 @@ def port_is_free(port: int) -> bool:
     return True
 
 
+def _connect_host(host: str) -> str:
+    """Turn wildcard listen addresses into a safe local connect target."""
+    if host in ("", "0.0.0.0"):
+        return "127.0.0.1"
+    if host == "::":
+        return "::1"
+    return host
+
+
 def build_service_env(ext_id: str, port: int, host: str, token: str, hub_url: str, engine_dir: str) -> dict:
     """白名單式組環境變數：沒列在這裡的（API key、雲端憑證、NODE_OPTIONS、PYTHONPATH…）一律不給。"""
     env = {key: os.environ[key] for key in BASE_ENV_KEYS if key in os.environ}
@@ -183,7 +192,7 @@ class ServiceManager:
                 self._forget(ext_id)
                 raise ServiceError("SERVICE_EXITED", f"後端啟動後結束（exit={svc.proc.returncode}）\n{_tail(svc.log_path)}")
             try:
-                conn = http.client.HTTPConnection("127.0.0.1", svc.port, timeout=1)
+                conn = http.client.HTTPConnection(_connect_host(svc.host), svc.port, timeout=1)
                 conn.request("GET", health)
                 status = conn.getresponse().status
                 conn.close()
@@ -193,7 +202,10 @@ class ServiceManager:
             except OSError:
                 pass
             time.sleep(0.2)
-        raise ServiceError("SERVICE_NOT_READY", f"後端 {READY_TIMEOUT_S:.0f} 秒內沒有回應 {health}；日誌：{self._procs[ext_id].log_path}")
+        svc = self._procs.get(ext_id)
+        log_path = svc.log_path if svc else self.paths.service_logs / f"{ext_id}.log"
+        self.stop(ext_id)
+        raise ServiceError("SERVICE_NOT_READY", f"後端 {READY_TIMEOUT_S:.0f} 秒內沒有回應 {health}；日誌：{log_path}")
 
     def _forget(self, ext_id: str) -> ServiceProcess | None:
         with self._lock:
@@ -258,7 +270,7 @@ class ServiceManager:
             raise ServiceError("INVALID_ARGUMENT", "body 太大")
         clean = {str(k): str(v) for k, v in (headers or {}).items() if str(k).lower() not in _HOP_HEADERS}
         clean["X-Randy-Hub-Ext"] = ext_id
-        conn = http.client.HTTPConnection("127.0.0.1", svc.port, timeout=60)
+        conn = http.client.HTTPConnection(_connect_host(svc.host), svc.port, timeout=60)
         try:
             conn.request(verb, path, body=payload, headers=clean)
             resp = conn.getresponse()

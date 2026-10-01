@@ -22,7 +22,7 @@ from . import macos
 
 DEFAULT_GATEWAY = "http://127.0.0.1:5001"
 DEFAULT_LAUNCHD_LABEL = "com.randy.strategist-web"
-ALLOWED_TARGETS = ("", "claude", "nim", "gemini", "gpt", "mlx", "ollama", "journal")  # 與 web_gateway._ALLOWED_TARGETS 一致
+ALLOWED_TARGETS = ("", "claude", "nim", "gemini", "gpt", "mlx", "ollama", "agent", "coder", "flash", "pro", "journal")  # 與 web_gateway._ALLOWED_TARGETS 一致
 ROUTE_KEYS = (
     "STRATEGIST_PROVIDER", "STRATEGIST_MODEL", "STRATEGIST_GEMINI_MODEL", "STRATEGIST_CLAUDE_MODEL",
     "STRATEGIST_OLLAMA_MODEL", "STRATEGIST_GPT_MODEL", "STRATEGIST_GEMINI_KEY_SOURCE", "STRATEGIST_MAX_TOKENS",
