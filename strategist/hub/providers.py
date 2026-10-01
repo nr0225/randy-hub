@@ -3,7 +3,7 @@
 Adapted from x-hub (MIT, Copyright (c) 2026 dckxx) — src/components/AiProviders.vue、chat.rs 的做法：
 測試連通、拉取模型清單勾選加入、API Key 存系統鑰匙圈、介面只顯示遮罩。
 Randy 修改：
-  - 內建預設組：GPT / Claude / NVIDIA NIM / DeepSeek / Ollama / MLX（皆走 /v1/models 與 /v1/chat/completions）
+  - 內建預設組：GPT / NVIDIA NIM / DeepSeek / Ollama / MLX 走 OpenAI 相容 API；Claude 走 Anthropic Messages API
   - 遠端端點強制 https（http 只允許本機回環），避免 key 走明文
   - 介面不提供「顯示 / 複製 key」（x-hub 有），只回遮罩
   - 與 Strategist routing 解耦：這裡的設定不會改動 strategist/settings.json
@@ -164,9 +164,10 @@ class ProviderManager:
         if spec.get("needsKey") and not key:
             raise ProviderError("KEY_MISSING", "尚未設定 API key")
         if key:
-            headers["Authorization"] = f"Bearer {key}"
             if spec.get("keyHeader"):
                 headers[spec["keyHeader"]] = key
+            else:
+                headers["Authorization"] = f"Bearer {key}"
         headers.update(spec.get("extraHeaders", {}))
         return headers
 
@@ -210,10 +211,24 @@ class ProviderManager:
         payload = {"model": chosen, "messages": [{"role": "user", "content": str(prompt)[:20_000]}],
                    "max_tokens": max(1, min(int(max_tokens), 4096))}
         started = time.perf_counter()
-        body = self._call(record, "/chat/completions", payload, 120)
-        try:
-            text = body["choices"][0]["message"]["content"]
-        except (KeyError, IndexError, TypeError) as exc:
-            raise ProviderError("BAD_RESPONSE", "回應缺少 choices[0].message.content") from exc
+        if record.get("preset") == "anthropic":
+            body = self._call(record, "/messages", payload, 120)
+            try:
+                blocks = body["content"]
+                text = "".join(
+                    str(block.get("text", ""))
+                    for block in blocks
+                    if isinstance(block, dict) and block.get("type") == "text"
+                ).strip()
+            except (KeyError, TypeError) as exc:
+                raise ProviderError("BAD_RESPONSE", "回應缺少 content 文字區塊") from exc
+            if not text:
+                raise ProviderError("BAD_RESPONSE", "回應沒有可用的文字內容")
+        else:
+            body = self._call(record, "/chat/completions", payload, 120)
+            try:
+                text = body["choices"][0]["message"]["content"]
+            except (KeyError, IndexError, TypeError) as exc:
+                raise ProviderError("BAD_RESPONSE", "回應缺少 choices[0].message.content") from exc
         return {"model": chosen, "reply": text, "usage": body.get("usage"),
                 "latencyMs": int((time.perf_counter() - started) * 1000)}
