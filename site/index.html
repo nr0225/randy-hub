@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Randy Hub：本機優先、可擴充、重視權限邊界的 macOS AI 工具與 Agent 工作空間。">
+  <meta name="color-scheme" content="dark light">
+  <title>Randy Hub｜開源 AI 工作空間</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <p class="eyebrow">OPEN SOURCE · LOCAL FIRST · macOS</p>
+      <h1>Randy Hub</h1>
+      <p class="lead">把 AI Agent、模型供應商、桌面工具與工作流程放進同一個本機優先的控制面。</p>
+      <div class="actions">
+        <a class="primary" href="https://github.com/nr0225/randy-hub">查看 GitHub 專案</a>
+        <a href="https://github.com/nr0225">開發者首頁</a>
+      </div>
+    </header>
+
+    <section aria-labelledby="why">
+      <h2 id="why">這個專案在解決什麼</h2>
+      <div class="grid">
+        <article>
+          <h3>本機優先</h3>
+          <p>核心 Runtime 留在自己的 Mac；雲端只承擔明確授權的公開或外部能力。</p>
+        </article>
+        <article>
+          <h3>權限隔離</h3>
+          <p>擴充預設不可信任，能力需宣告與授權，機密資料使用 macOS Keychain。</p>
+        </article>
+        <article>
+          <h3>模型可替換</h3>
+          <p>可管理不同 AI 供應商與本機模型，不把整套工作流綁死在單一服務。</p>
+        </article>
+        <article>
+          <h3>可驗證</h3>
+          <p>提供 doctor、自我測試與安全邊界，讓功能狀態能被檢查，而不是只靠描述。</p>
+        </article>
+      </div>
+    </section>
+
+    <section aria-labelledby="boundary">
+      <h2 id="boundary">公開層與私人層分開</h2>
+      <div class="flow" role="img" aria-label="公開 GitHub 與 Cloudflare 只放公開安全內容，本機 Strategist 保存私人狀態與機密">
+        <span>公開 GitHub</span><b>→</b><span>Cloudflare Pages</span><b>→</b><span>開源文件／網站</span>
+      </div>
+      <div class="flow private">
+        <span>Mac</span><b>→</b><span>Strategist</span><b>→</b><span>Randy Hub</span><b>→</b><span>受控工具</span>
+      </div>
+      <p class="note">私人記憶、Runtime 資料庫、API 金鑰與客戶資料不屬於本公開網站。</p>
+    </section>
+
+    <section aria-labelledby="license">
+      <h2 id="license">授權與來源</h2>
+      <p>Randy Hub 自有程式碼以 MIT License 發布。專案曾研究並參考 MIT 授權的 x-hub 介面概念；第三方來源與歸屬請以 repository 內的 notices 為準。</p>
+    </section>
+
+    <footer>
+      <span>Randy Hub · 2026</span>
+      <a href="https://github.com/nr0225/randy-hub/blob/main/LICENSE">MIT License</a>
+      <a href="https://github.com/nr0225/randy-hub/blob/main/strategist/hub/THIRD_PARTY_NOTICES.md">第三方聲明</a>
+    </footer>
+  </main>
+</body>
+</html>
