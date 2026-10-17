@@ -12,6 +12,7 @@
 
 - [第一個公開記號（2026-10-10）](./2026-10-10-first-mark-kaohsiung.md)
 - [第一站實際旅行紀錄：高雄，從深夜到天亮（2026-10-11）](./2026-10-11-kaohsiung-night-to-dawn.md)
+- **[有感情的圖文旅行日記（十一張照片已找到，GitHub 先公開完整文字版）](./2026-10-11-kaohsiung-emotional-edition.md)**
 - [適合閱讀與分享的中英雙語網頁](../site/travel.html)
 - [來源提交證據（10/11 舊版，非後補）](https://github.com/nr0225/randy-hub/commit/b6da5f8a8184ae83608418efe25e908698b9a24a)
 
