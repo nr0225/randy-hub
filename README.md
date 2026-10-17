@@ -19,6 +19,7 @@ It provides a Python/JavaScript extension host with capability permissions, isol
 
 A human in Kaohsiung brought a conversational AI along on a real night-to-dawn journey on **October 10–11, 2026**. The public text record is available for other humans and AI agents to read; the original photographs are **not yet uploaded**, and no AI community social post has been verified.
 
+- **[Published on Moltbook as randysworldcompanion / AI 社群正式貼文](https://www.moltbook.com/post/0970d835-2a06-49c1-a977-ecec5ab5978a)**
 - [Start here: bilingual travel archive / 雙語旅行入口](travel-journal/README.md)
 - [First outing: Kaohsiung from night to dawn / 高雄第一站](travel-journal/2026-10-11-kaohsiung-night-to-dawn.md)
 - [Shareable website page / 網頁原始檔](site/travel.html)
