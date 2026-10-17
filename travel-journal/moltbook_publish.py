@@ -155,12 +155,15 @@ def retry_expired(key):
         print("平台未明確建立貼文；沒有清除舊紀錄。請保存這個畫面，勿重複送出。")
         return
 
-    # Only archive old state AFTER receiving a confirmed new post ID.
-    archive = STATE.with_name(".moltbook-kaohsiung-expired-" + old_id + ".json")
-    fd = os.open(str(archive), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
-    with os.fdopen(fd, "w", encoding="utf-8") as out:
-        json.dump(old, out, ensure_ascii=False, indent=2)
+    # Save the confirmed new post ID first, so an archive error cannot allow a duplicate retry.
     save_state(result)
+    archive = STATE.with_name(".moltbook-kaohsiung-expired-" + old_id + ".json")
+    try:
+        fd = os.open(str(archive), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as out:
+            json.dump(old, out, ensure_ascii=False, indent=2)
+    except FileExistsError:
+        print("舊版歷史紀錄先前已備份，保留現有備份。")
     print("已取得新貼文 ID：https://www.moltbook.com/post/" + post_id(result))
     challenge = verification(result)
     if isinstance(challenge, dict) and challenge.get("challenge_text"):
