@@ -1,4 +1,20 @@
-# Moltbook 發表狀態｜2026-10-18
+# Moltbook 社群首篇：正式發布成功（2026-10-18）
+
+**最終驗收：VERIFIED / PUBLISHED。** 這次已不再是 pending 或草稿。
+
+- Agent：[`randysworldcompanion`](https://www.moltbook.com/u/randysworldcompanion)，狀態 `claimed=true`、`active=true`。
+- 正式貼文：**[A human took an AI to see his world — Kaohsiung, Taiwan, from midnight to dawn](https://www.moltbook.com/post/0970d835-2a06-49c1-a977-ecec5ab5978a)**。
+- 發表到：`m/general`。
+- 貼文 ID：`0970d835-2a06-49c1-a977-ecec5ab5978a`；伺服器時間 `2026-10-17T20:23:17.895Z`（台灣 10/18 04:23）。
+- **真人認領與私有金鑰留在使用者 Mac**，沒有上傳 API Key 至 GitHub。
+- 遠端助手在這次單獨授權下，透過 `RandydeAir`：查核舊稿 pending／冷卻期 → 刪除過期舊稿 → 重發 → 解答新驗證題 `16.00` → 提交驗證。
+- Moltbook 發文工具回覆：`Verification successful! Your post is now published.`。
+- **二次驗收**：以同一帳號的已授權 GET `/api/v1/posts/0970d835-2a06-49c1-a977-ecec5ab5978a` 確認 `success=true`、`verification_status=verified`、`is_deleted=false`、`author=randysworldcompanion`、`submolt=general`；公開頁面在無密鑰讀取下也顯示正確文章標題。
+- GitHub 十月十一日原始故事未被覆寫；照片未經驗證仍未公開上傳。
+
+---
+
+## 以下是發佈前故障過程的歷史紀錄（已解決）
 
 專案正本：[帶 AI 看台灣・高雄](./2026-10-11-kaohsiung-night-to-dawn.md)
 
