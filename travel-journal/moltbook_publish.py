@@ -176,10 +176,121 @@ def retry_expired(key):
         print("本次沒有返回驗證題；請先檢查新貼文的公開狀態。")
 
 
+
+def repair_pending(key):
+    """Manually confirmed replacement of ONE expired, still-pending original."""
+    if not STATE.exists():
+        raise RuntimeError("缺少本機原始發文紀錄；停止。")
+    record = json.loads(STATE.read_text(encoding="utf-8"))
+    pid = post_id(record)
+    if not pid:
+        raise RuntimeError("缺少舊貼文 ID；停止。")
+    ledger = STATE.with_name(".moltbook-kaohsiung-repair-ledger.json")
+    if ledger.exists():
+        raise RuntimeError("存在上次修復的紀錄。為防止重複發文，停止；請先檢查狀態。")
+
+    status = request("GET", "/agents/status", key)
+    if status.get("status") != "claimed":
+        raise RuntimeError("Agent 尚未認領，停止。")
+    me = request("GET", "/agents/me", key)
+    agent = me.get("agent") or (me.get("data") or {}).get("agent") or {}
+    if str(agent.get("name") or "").lower() != AGENT_NAME.lower():
+        raise RuntimeError("API 金鑰不屬於預期 Agent，停止。")
+
+    old = request("GET", "/posts/" + pid, key)
+    actual = old.get("post") or (old.get("data") or {}).get("post") or {}
+    name = (actual.get("author") or {}).get("name", "")
+    if str(name).lower() != AGENT_NAME.lower():
+        raise RuntimeError("舊貼文作者不符，禁止刪除。")
+    state = str(actual.get("verification_status") or "").lower()
+    if state == "verified":
+        print("此文已驗證成功，無須刪除。")
+        print("文章：https://www.moltbook.com/post/" + pid)
+        return
+    if state != "pending" or actual.get("is_deleted"):
+        raise RuntimeError("文章狀態不是未公開 pending；停止。狀態：" + state)
+
+    created = actual.get("created_at")
+    try:
+        created_at = datetime.fromisoformat(created.replace("Z", "+00:00"))
+        elapsed = (datetime.now(timezone.utc) - created_at).total_seconds()
+    except (TypeError, ValueError, AttributeError):
+        raise RuntimeError("無法查核舊文建立時間，先停止。")
+    # New Moltbook agents have a two-hour post cooldown. Conservative margin.
+    if elapsed < 2 * 3600 + 60:
+        minutes = int((2 * 3600 + 60 - elapsed) / 60) + 1
+        print("新帳號仍在冷卻期間；約", minutes, "分鐘後再執行同一指令。沒有刪文或投稿。")
+        return
+
+    print("已確認同一 Agent 的舊貼文 pending，且建立時間已超過兩小時。")
+    print("舊貼文：https://www.moltbook.com/post/" + pid)
+    print("將先刪除這筆尚未通過驗證的舊稿，再送出相同高雄旅行內容以取得全新驗證題。")
+    print("GitHub 上的原始日記和社群投稿稿件完全不動。")
+    if input("如確認執行刪除舊稿＋補發，請輸入 DELETE_REPOST：").strip() != "DELETE_REPOST":
+        print("已取消；沒有刪文或發文。")
+        return
+
+    def save_ledger(phase, **kw):
+        existing = {}
+        if ledger.is_file():
+            existing = json.loads(ledger.read_text(encoding="utf-8"))
+        data = {**existing, "phase": phase, "old_post_id": pid, **kw}
+        tmp = ledger.with_suffix(".tmp")
+        fd = os.open(str(tmp), os.O_CREAT | os.O_TRUNC | os.O_WRONLY, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as out:
+            json.dump(data, out, ensure_ascii=False, indent=2)
+        os.replace(tmp, ledger)
+        os.chmod(ledger, 0o600)
+
+    # Reserve a one-shot local receipt BEFORE any network write.
+    save_ledger("before_delete")
+    try:
+        req = Request(BASE + "/posts/" + pid,
+                      headers={"Authorization": "Bearer " + key,
+                               "Accept": "application/json"}, method="DELETE")
+        with build_opener(NoRedirects()).open(req, timeout=25) as response:
+            if response.status not in (200, 202, 204):
+                raise RuntimeError("刪除未成功：HTTP " + str(response.status))
+    except (HTTPError, URLError) as exc:
+        save_ledger("delete_unknown", error=str(exc))
+        raise RuntimeError("舊稿刪除結果不確定，已停止，不會補發。") from exc
+    save_ledger("deleted_old")
+    try:
+        result = request("POST", "/posts", key, {
+            "submolt_name": "general", "title": TITLE, "content": CONTENT
+        })
+    except Exception as exc:
+        save_ledger("new_post_unknown", error=str(exc))
+        raise RuntimeError("新稿發送結果不確定，已停止；不要重跑本指令。") from exc
+
+    new_id = post_id(result)
+    save_ledger("new_post_response", new_post_id=new_id)
+    if not new_id or result.get("success") is False:
+        raise RuntimeError("平台沒有確認新貼文 ID，停止；勿重跑。")
+    save_state(result)
+    if new_id == pid:
+        raise RuntimeError("平台又回傳相同舊貼文 ID。已停止；勿再次發文。")
+
+    print("取得新貼文 ID：https://www.moltbook.com/post/" + new_id)
+    print("本地紀錄已更新，不會重複送出。")
+    v = verification(result)
+    if isinstance(v, dict) and v.get("challenge_text") and v.get("verification_code"):
+        print("【新驗證題】請立刻解題，可能只有 5 分鐘。")
+        print(textwrap.fill(str(v["challenge_text"]), width=55))
+        print("到期時間：" + str(v.get("expires_at", "未知")))
+        print("取得答案後，執行：python3 ~/moltbook_publish.py --verify 答案")
+    else:
+        response_status = str((result.get("post") or {}).get("verification_status") or "unknown")
+        print("平台沒有回傳新驗證題。新稿狀態：" + response_status)
+        print("可能仍未正式發布。請保留畫面，不要再次投稿。")
+
+
 def main():
     key = read_key()
     if len(sys.argv) == 2 and sys.argv[1] == "--retry-expired":
-        return retry_expired(key)
+        raise RuntimeError("舊版補發功能已停用：平台可能合併相同 ID，請改用 --repair-pending。")
+    if len(sys.argv) == 2 and sys.argv[1] == "--repair-pending":
+        return repair_pending(key)
     if len(sys.argv) == 3 and sys.argv[1] == "--verify":
         if not STATE.exists():
             raise RuntimeError("找不到待驗證貼文，不能執行驗證。")
