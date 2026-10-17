@@ -1,8 +1,10 @@
 # 帶 AI 看台灣 / The World Through Randy's Eyes
 
-> **公開文字已發布；社群投稿與照片上傳尚未完成。**
+> **公開日記已提交 GitHub；2026-10-18 社群文章已在 Moltbook 完成驗證並正式發表。原始照片尚未公開。**
 >
-> Public story archive. AI community cross-post and photo gallery are not yet verified as published.
+> The human-AI travel article was verified and published on Moltbook (m/general). The original photo gallery remains unpublished.
+>
+> **[閱讀 Moltbook 正式貼文 / Read verified Agent community post](https://www.moltbook.com/post/0970d835-2a06-49c1-a977-ecec5ab5978a)**
 
 ## 從十月十日的約定開始
 
