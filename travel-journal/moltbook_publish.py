@@ -6,6 +6,8 @@ import json
 import os
 import sys
 from pathlib import Path
+from datetime import datetime, timezone
+import textwrap
 from urllib.request import Request, build_opener, HTTPRedirectHandler
 from urllib.error import HTTPError, URLError
 
@@ -94,8 +96,87 @@ def verification(data):
     post = data.get("post") if isinstance(data.get("post"), dict) else {}
     return post.get("verification") or data.get("verification")
 
+
+def retry_expired(key):
+    """Repost once only after the previous platform challenge has expired."""
+    if not STATE.exists():
+        raise RuntimeError("找不到舊貼文紀錄，不能執行補發。")
+    old = json.loads(STATE.read_text(encoding="utf-8"))
+    old_id = post_id(old)
+    v = verification(old)
+    if not old_id or not isinstance(v, dict) or not v.get("expires_at"):
+        raise RuntimeError("舊貼文 ID 或驗證到期時間不完整，停止以避免重複。")
+    try:
+        end = datetime.fromisoformat(v["expires_at"].replace("Z", "+00:00"))
+        if end.tzinfo is None:
+            raise ValueError("Timestamp missing timezone")
+    except (ValueError, TypeError):
+        raise RuntimeError("無法安全辨識舊驗證到期時間，先不要重新發文。")
+    if datetime.now(timezone.utc) <= end:
+        raise RuntimeError("舊驗證仍有效；先用 --verify 作答，不要重發。")
+
+    # Verify the existing post was not already published.
+    try:
+        previous = request("GET", "/posts/" + old_id, key)
+    except RuntimeError as exc:
+        if "Moltbook HTTP 404：" in str(exc):
+            previous = None
+        else:
+            raise
+    if previous is not None:
+        p = previous.get("post") or previous.get("data", {}).get("post") or previous
+        state = str(p.get("verification_status") or p.get("status") or "").lower()
+        if state in ("verified", "published") or p.get("is_verified") is True:
+            print("舊文章已可見或已通過驗證，不重新發文。")
+            print("舊連結：https://www.moltbook.com/post/" + old_id)
+            return
+        if state not in ("pending", "expired", "failed", "rejected"):
+            raise RuntimeError("平台舊文章的公開狀態不明，停止補發避免重複。")
+
+    claimed = request("GET", "/agents/status", key)
+    if claimed.get("status") != "claimed":
+        raise RuntimeError("帳號不在 claimed 狀態，停止。")
+    me = request("GET", "/agents/me", key)
+    agent = me.get("agent") or (me.get("data") or {}).get("agent") or {}
+    if str(agent.get("name") or "").lower() != AGENT_NAME.lower():
+        raise RuntimeError("本機 API 金鑰不是原本的 Agent，停止。")
+
+    print("先前的驗證碼確定過期，原貼文尚未確認公開。")
+    print("不會重新註冊；準備用同一篇文章建立一個新的待驗證貼文。")
+    print("舊貼文 ID：" + old_id)
+    if input("確定重新投稿一次？請輸入 YES：").strip() != "YES":
+        print("已取消，沒有投稿。")
+        return
+
+    result = request("POST", "/posts", key, {
+        "submolt_name": "general", "title": TITLE, "content": CONTENT,
+    })
+    if result.get("success") is False or not post_id(result):
+        print("平台未明確建立貼文；沒有清除舊紀錄。請保存這個畫面，勿重複送出。")
+        return
+
+    # Only archive old state AFTER receiving a confirmed new post ID.
+    archive = STATE.with_name(".moltbook-kaohsiung-expired-" + old_id + ".json")
+    fd = os.open(str(archive), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8") as out:
+        json.dump(old, out, ensure_ascii=False, indent=2)
+    save_state(result)
+    print("已取得新貼文 ID：https://www.moltbook.com/post/" + post_id(result))
+    challenge = verification(result)
+    if isinstance(challenge, dict) and challenge.get("challenge_text"):
+        print("新驗證題（通常五分鐘有效）：")
+        print(textwrap.fill(str(challenge["challenge_text"]), width=66))
+        print("到期時間：" + str(challenge.get("expires_at", "未知")))
+        print("請直接拍這段題目給我，不要重複投稿。")
+        print("知道答案後：python3 ~/moltbook_publish.py --verify 你的答案")
+    else:
+        print("本次沒有返回驗證題；請先檢查新貼文的公開狀態。")
+
+
 def main():
     key = read_key()
+    if len(sys.argv) == 2 and sys.argv[1] == "--retry-expired":
+        return retry_expired(key)
     if len(sys.argv) == 3 and sys.argv[1] == "--verify":
         if not STATE.exists():
             raise RuntimeError("找不到待驗證貼文，不能執行驗證。")
